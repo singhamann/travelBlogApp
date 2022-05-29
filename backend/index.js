@@ -7,7 +7,7 @@ const indexRouter= require('./routes/index.route')
 const bodyParser =require('body-parser')
 const cors = require('cors')
 
-const URL= 'mongodb+srv://amansingh:aman@cluster0.xlsxx.mongodb.net/Vymo-Project?retryWrites=true&w=majority'
+const URL= ''
 mongoose.connect(URL).then(() =>{
     console.log('Connection Successful!');
 },(err) =>{
