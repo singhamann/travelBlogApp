@@ -51,9 +51,9 @@ const deletePlace = async (req,res,next) =>{
 
     oldPlace= await Place.findById(placeId)
     try{
-        const session= await moongoose.startSession();
+        const session= await mongoose.startSession();
         session.startTransaction();
-        await oldPlace.remove({session}) 
+        await oldPlace.remove({session})
         existingUser.places.pull(oldPlace);
         await existingUser.save({session});
         await session.commitTransaction();
@@ -66,58 +66,48 @@ const deletePlace = async (req,res,next) =>{
     res.status(201).send('Place Deleted Successfully !!')
 }
 
-const createPlace = async (req, res, next) =>{
-    const {title, description, address, image, creator} = req.body;
-    
-    const validationErrors= validationResult(req)
-    if(!validationErrors.isEmpty()){
-        const error= createHttpError(400, validationErrors)
-        res.status(400).json({body: {error}})
+const createPlace = async (req, res, next) => {
+    console.log(req.body)
+    const { title, description, address, image, creator } = req.body;
+
+    const validationErrors = validationResult(req);
+    if (!validationErrors.isEmpty()) {
+        const error = createHttpError(400, validationErrors);
+        res.status(400).json({ body: { error } });
         return next();
     }
-    let user;
-    try{
-        user= await User.findById(creator);
-        // const isEmpty = Object.keys(user).length ===0
-        // if(isEmpty){
-        //     res.status(403).json({body: {error: "User with the creator id does not exists"}})
-        //     return next()
-        // }
-    } catch(err){
-        res.status(500).send("Something Went Wrong")
-        return next()
-    }
-    // let existingUser;
-    // try{
-    //     existingUser= await User.findById(creator);
-    // } catch(err){
-    //     const error= createHttpError(500, 'Something Went Wrong 1')
-    //     res.status(500).json({body: {error}})
-    //     return next()
-    // }
-    // if (!existingUser) {
-    //     const error=  createHttpError(400, 'User does not exist')
-    //     res.status(400).json({body: {error}});
-    //     return next();
-    // }
-    const newPlace = new Place({title, description, address, image, creator}) ;
 
-    try{
-        const session= await moongoose.startSession();
-        session.startTransaction();
-        await newPlace.save({session}) 
-        user.places.push(newPlace);
-        await user.save({session});
-        await session.commitTransaction();
-        session.endSession();
-    } catch(err){
-        console.log(err)
-        const error= createHttpError(500, 'Something Went Wrong 2')
-        res.status(500).json({body: {error}})
-        return next()
+    let user;
+    try {
+        user = await User.findById(creator);
+        const isEmpty = Object.keys(user).length === 0;
+        if (isEmpty) {
+            res.status(403).json({ body: { error: "User with the creator id does not exist" } });
+            return next();
+        }
+    } catch (err) {
+        res.status(500).json({ body: { error: "Error finding user" } });
+        return next();
     }
-    res.status(201).json({body: {place: newPlace.toObject() }})
-}
+
+    const newPlace = new Place({ title, description, address, image, creator });
+
+    try {
+        // Save the place first
+        await newPlace.save();
+
+        // Update the user's places array
+        user.places.push(newPlace);
+        await user.save();
+
+        res.status(201).json({ body: { place: newPlace.toObject() } });
+    } catch (err) {
+        console.log(err);
+        const error = createHttpError(500, 'Error saving place');
+        res.status(500).json({ body: { error } });
+        return next();
+    }
+};
 
 const updatePlace = async (req, res, next) =>{
     const { placeID , creator, title, description, address, image} = req.body;

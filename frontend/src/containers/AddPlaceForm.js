@@ -7,6 +7,7 @@ import BASE_URL from "../Utils/baseURL"
 export default function AddPlace(){
     // const userId= useSelector(state => state.userId)
     const userId= localStorage.userId
+    console.log("userId is", userId)
     const navigate = useNavigate()
     const [formData, setFormData] = useState({
         title: '',
@@ -29,17 +30,23 @@ export default function AddPlace(){
             image: ''
         })
     }
-
     const addPlace = () => {
+        console.log("addPlace function called")
         const payload = new URLSearchParams();
         payload.append('title', formData.title)
         payload.append('description', formData.description)
         payload.append('address', formData.address)
         payload.append('image', formData.image)
         payload.append('creator', userId )
-        axios.post(BASE_URL + 'places/createPlace',payload)
-        .then((response) =>{
-            navigate('/dashboard/'+userId)
+        console.log("payload is", payload.toString())
+
+        axios.post(BASE_URL + 'places/createPlace', payload)
+        .then((response) => {
+            console.log("Success:", response.data)
+            navigate('/dashboard/'+ userId)
+        })
+        .catch((error) => {
+            console.error("Error adding place:", error)
         })
     }
     return(<>
@@ -59,8 +66,8 @@ export default function AddPlace(){
             Image URL : <input type='text' name="image" onChange={handleInputBox} value={formData.image} />
             <br/>
         </label>
-        <button onClick={() => addPlace()}> Add </button> 
-        <button onClick={() => reset()}> Reset </button> 
+        <button onClick={() => addPlace()}> Add </button>
+        <button onClick={() => reset()}> Reset </button>
         <br/>
     </>)
 }

@@ -23,6 +23,7 @@ export default function Navbar(){
     const dispatch = useDispatch()
     const navigate = useNavigate()
     const getUserName = () => {
+        console.log(BASE_URL)
         axios.get(BASE_URL + 'users/getUser/'+ userId)
         .then(response => {
             setName(response.data.body.name)
